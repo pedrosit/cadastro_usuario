@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css" />
+    <title>Document</title>
+    <style>
+      .modalLogin {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: blue;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+      }
+      .showModal {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <button onclick="abrirModalLogin()">FAZER LOGIN</button>
+    <div class="form-container">
+      <form
+        action="../backend/controller/UsuarioController.php"
+        method="post"
+        class="form"
+        id="form"
+      >
+        <h2 class="titulo-form">Cadastro's Pizza</h2>
+        <input type="hidden" name="acao" value="criar" id="acao-input" />
+        <input type="hidden" name="id" id="id-input" />
+        <input type="text" name="nome" id="nome-input" />
+        <input type="text" name="email" id="email-input" />
+        <input type="password" name="senha" id="senha-input" />
+        <select name="papel" id="papel-input"></select>
+        <input type="submit" value="ENVIAR" />
+      </form>
+      <div class="modalLogin">
+        <form id="login-form">
+          <input
+            type="text"
+            name="emailLogin"
+            id="emailLogin"
+            placeholder="E-mail"
+          />
+          <input
+            type="password"
+            name="senhaLogin"
+            id="senhaLogin"
+            placeholder="Senha"
+          />
+          <input type="submit" value="Enviar" />
+          <button type="button" onclick="abrirModalLogin()">
+            Voltar para a tela de cadastro
+          </button>
+        </form>
+      </div>
+    </div>
+    <script>
+      let papeis = [];
+
+      const getPapeis = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost/trabalhophp/backend/controller/PapelController.php"
+          );
+
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+
+          const data = await response.json();
+          data.forEach((el) => {
+            papeis.push({ id: el.id_papel, papel: el.papel });
+          });
+
+          adicionaPapeisComoOption();
+        } catch (error) {
+          console.error("Error fetching papeis:", error);
+        }
+      };
+
+      const adicionaPapeisComoOption = () => {
+        const selectTag = document.getElementById("papel-input");
+        papeis.forEach((el) => {
+          const optionTag = document.createElement("option");
+          optionTag.value = el.id;
+          optionTag.textContent = el.papel;
+          selectTag.appendChild(optionTag);
+        });
+      };
+
+      document.getElementById("form").addEventListener("submit", () => {
+        const acaoInput = document.getElementById("acao-input");
+        acaoInput.value = "criar";
+      });
+      let mudador = false;
+      const abrirModalLogin = () => {
+        mudador = !mudador;
+        const modal = document.getElementsByClassName("modalLogin")[0];
+        if (mudador) {
+          modal.classList.add("showModal");
+        } else {
+          modal.classList.remove("showModal");
+        }
+      };
+
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const email = document.getElementById("emailLogin").value;
+          const senha = document.getElementById("senhaLogin").value;
+
+          try {
+            const response = await fetch(
+              "http://localhost/trabalhophp/backend/controller/UsuarioController.php",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                  acao: "login",
+                  emailLogin: email,
+                  senhaLogin: senha,
+                }),
+              }
+            );
+
+            const result = await response.json();
+            if (result.status === "success") {
+              alert("Login bem-sucedido!");
+              console.log(result.usuario); // Você pode redirecionar ou fazer outra ação aqui
+            } else {
+              alert(result.message);
+            }
+          } catch (error) {
+            console.error("Erro ao fazer login:", error);
+          }
+        });
+
+      window.addEventListener("load", () => {
+        getPapeis();
+      });
+    </script>
+  </body>
+</html>

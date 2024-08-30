@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <style>
+    * {
+      background-color: yellow;
+    }
+    h2 {
+      color: red;
+    }
+    input {
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+  <h2>Escolha o sabor da sua pizza!!</h2>
+  <form action="../backend/controller/PapelController.php" method="post">
+    <input type="text" name="papel" id="papel" />
+    <input type="submit" />
+  </form>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Papel</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="papeisTableBody">
+    </tbody>
+  </table>
+  <script>
+    const getPapeis = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost/trabalhophp/backend/controller/PapelController.php"
+        );
+        const data = await response.json();
+
+        console.log('Papeis recebidos:', data); 
+
+        const tableBody = document.getElementById("papeisTableBody");
+        tableBody.innerHTML = "";
+
+        data.forEach((papel) => {
+          const row = document.createElement("tr");
+
+          const papelCell = document.createElement("td");
+          papelCell.textContent = `${papel.papel} ${papel.id_papel}`;
+          row.appendChild(papelCell);
+
+          const acoesCell = document.createElement("td");
+          const deleteButton = document.createElement("button");
+          const editButton = document.createElement("button");
+          deleteButton.textContent = "Deletar";
+          editButton.textContent = "Editar";
+          deleteButton.addEventListener("click", () => deletePapel(papel.id_papel)); 
+          deleteButton.addEventListener("click", () => editarPapel());
+
+          acoesCell.appendChild(deleteButton);
+          acoesCell.appendChild(editButton);
+          row.appendChild(acoesCell);
+
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    const editarPapel = () => {
+      
+    }
+    const deletePapel = async (id) => {
+      console.log('ID para deletar:', id);
+
+      try {
+        const response = await fetch(
+          "http://localhost/trabalhophp/backend/controller/PapelController.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `acao=deletar&id=${id}`,
+          }
+        );
+
+        console.log('Resposta da exclusão:', await response.text());
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.status === 'success') {
+            getPapeis();
+          } else {
+            console.error("Erro ao deletar papel:", result.message);
+          }
+        } else {
+          console.error("Erro ao deletar papel:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error deleting data:", error);
+      }
+    };
+
+    window.onload = getPapeis;
+  </script>
+</body>
+</html>

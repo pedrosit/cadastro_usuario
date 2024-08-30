@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+  </head>
+  <body>
+    <script>
+      let usuarios = [];
+      const getUsuarios = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost/trabalhophp/backend/controller/UsuarioController.php"
+          );
+          const data = await response.json();
+          data.forEach(el => {
+            usuarios.push({
+              id: el.id_usuario,
+              nome: el.nome,
+              papel: el.papel
+            });
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        console.log(usuarios);
+      };
+
+      window.addEventListener("load", () => {
+        getUsuarios();
+      });
+    </script>
+  </body>
+</html>
